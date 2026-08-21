@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flujo — Facturación y flujo de caja para pymes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --violet:#7c3aed;
+    --violet-deep:#5b21b6;
+    --violet-tint:#f4effe;
+    --coral:#ff6b57;
+    --lime:#c6f135;
+    --bg:#ffffff;
+    --bg-soft:#faf9ff;
+    --ink:#150f2e;
+    --text-dim:#635c79;
+    --line:#ece9f7;
+    --max:1200px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;} }
+  body{background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.6; overflow-x:hidden;}
+  h1,h2,h3,.display{font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; letter-spacing:-0.02em; color:var(--ink);}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit; text-decoration:none;}
+  ::selection{background:var(--violet); color:#fff;}
+  .wrap{max-width:var(--max); margin:0 auto; padding:0 32px;}
+  @media (max-width:640px){ .wrap{padding:0 20px;} }
+  img{max-width:100%; display:block;}
+
+  /* nav */
+  header{position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(255,255,255,0.8); backdrop-filter:blur(10px); border-bottom:1px solid transparent; transition:all .3s ease;}
+  header.scrolled{border-color:var(--line); background:rgba(255,255,255,0.95);}
+  nav{display:flex; align-items:center; justify-content:space-between; padding:20px 0;}
+  .logo{display:flex; align-items:center; gap:9px; font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; font-size:1.3rem;}
+  .logo-mark{width:26px; height:26px; border-radius:8px; background:linear-gradient(135deg, var(--violet), var(--coral)); flex-shrink:0;}
+  .nav-links{display:flex; gap:32px; font-size:0.94rem; font-weight:500;}
+  .nav-links a{color:var(--text-dim); transition:color .25s ease;}
+  .nav-links a:hover{color:var(--ink);}
+  .nav-cta{display:flex; align-items:center; gap:14px;}
+  .nav-login{font-size:0.9rem; font-weight:600; color:var(--text-dim);}
+  .btn{display:inline-flex; align-items:center; gap:8px; padding:13px 24px; font-size:0.9rem; font-weight:700; border-radius:10px; transition:all .25s ease; cursor:pointer; border:1px solid transparent;}
+  .btn-primary{background:var(--ink); color:#fff;}
+  .btn-primary:hover{background:var(--violet); transform:translateY(-1px);}
+  .btn-lg{padding:17px 30px; font-size:0.98rem; border-radius:12px;}
+  .btn-outline{border-color:var(--line); color:var(--ink); background:#fff;}
+  .btn-outline:hover{border-color:var(--violet); color:var(--violet);}
+  .burger{display:none; flex-direction:column; gap:5px; background:none; border:none; cursor:pointer; padding:6px;}
+  .burger span{width:22px; height:2px; background:var(--ink); border-radius:2px;}
+  @media (max-width:900px){ .nav-links,.nav-login{display:none;} .burger{display:flex;} }
+  .mobile-menu{display:none; flex-direction:column; background:#fff; border-top:1px solid var(--line);}
+  .mobile-menu.open{display:flex;}
+  .mobile-menu a{padding:16px 20px; border-bottom:1px solid var(--line); font-weight:500;}
+
+  section{position:relative;}
+
+  /* HERO */
+  .hero{padding:168px 0 90px; overflow:hidden;}
+  .hero-blob{position:absolute; top:-160px; right:-160px; width:640px; height:640px; border-radius:50%;
+    background:radial-gradient(circle at 30% 30%, rgba(124,58,237,0.28), rgba(255,107,87,0.12) 60%, transparent 70%);
+    filter:blur(10px); z-index:0; pointer-events:none;}
+  .hero-inner{position:relative; z-index:1; text-align:center; max-width:780px; margin:0 auto;}
+  .badge{
+    display:inline-flex; align-items:center; gap:8px; background:var(--violet-tint); color:var(--violet-deep);
+    font-size:0.82rem; font-weight:600; padding:8px 16px; border-radius:99px; margin-bottom:28px;
+  }
+  .badge .dot{width:6px; height:6px; border-radius:50%; background:var(--coral);}
+  .hero h1{font-size:clamp(2.4rem, 6vw, 4rem); line-height:1.08; margin-bottom:24px;}
+  .hero h1 .accent{background:linear-gradient(100deg, var(--violet), var(--coral)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .hero-sub{font-size:1.15rem; color:var(--text-dim); max-width:560px; margin:0 auto 38px;}
+  .hero-actions{display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:20px;}
+  .hero-note{font-size:0.85rem; color:var(--text-dim);}
+
+  /* dashboard mock */
+  .mock-wrap{position:relative; z-index:1; margin-top:70px; max-width:920px; margin-left:auto; margin-right:auto;}
+  .mock-card{
+    background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:0 30px 80px -20px rgba(21,15,46,0.25);
+    padding:28px; display:grid; grid-template-columns:1.3fr 1fr; gap:24px;
+  }
+  @media (max-width:720px){ .mock-card{grid-template-columns:1fr;} }
+  .mock-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; grid-column:1/-1;}
+  .mock-dots{display:flex; gap:6px;}
+  .mock-dots span{width:9px; height:9px; border-radius:50%; background:var(--line);}
+  .mock-title{font-size:0.85rem; font-weight:600; color:var(--text-dim);}
+  .mock-chart{display:flex; align-items:flex-end; gap:8px; height:140px; padding-top:10px;}
+  .mock-chart div{flex:1; border-radius:6px 6px 0 0; background:linear-gradient(180deg, var(--violet), var(--coral)); opacity:0.85;}
+  .mock-stat{font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; font-size:1.8rem; margin:14px 0 4px;}
+  .mock-stat-label{font-size:0.8rem; color:var(--text-dim);}
+  .mock-list{display:flex; flex-direction:column; gap:10px;}
+  .mock-row{display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--bg-soft); border-radius:10px; font-size:0.85rem;}
+  .mock-row .status{font-size:0.72rem; font-weight:700; padding:3px 9px; border-radius:99px;}
+  .status.paid{background:#e3f9e5; color:#1a8a3c;}
+  .status.pending{background:#fff3d6; color:#b7791f;}
+
+  .reveal{opacity:0; transform:translateY(24px); transition:opacity .8s ease, transform .8s ease;}
+  .reveal.in{opacity:1; transform:translateY(0);}
+
+  /* trust */
+  .trust{padding:50px 0 30px; text-align:center;}
+  .trust-label{font-size:0.85rem; color:var(--text-dim); font-weight:600; margin-bottom:26px;}
+  .trust-logos{display:flex; justify-content:center; gap:44px; flex-wrap:wrap;}
+  .trust-logos span{font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; font-size:1.05rem; color:#c9c4dc;}
+
+  .section-head{max-width:600px; margin-bottom:56px;}
+  .section-head.center{margin-left:auto; margin-right:auto; text-align:center;}
+  .eyebrow{display:inline-flex; align-items:center; gap:8px; font-size:0.8rem; font-weight:700; color:var(--violet); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:16px;}
+  .section-head h2{font-size:clamp(1.9rem,4vw,2.6rem);}
+  .section-head p{color:var(--text-dim); margin-top:16px; font-size:1.02rem;}
+
+  /* FEATURES bento */
+  .features{padding:110px 0;}
+  .bento{display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:200px; gap:20px;}
+  @media (max-width:920px){ .bento{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:560px){ .bento{grid-template-columns:1fr; grid-auto-rows:auto;} }
+  .b-card{border:1px solid var(--line); border-radius:16px; padding:28px; display:flex; flex-direction:column; justify-content:flex-end; position:relative; overflow:hidden; transition:transform .3s ease, box-shadow .3s ease;}
+  .b-card:hover{transform:translateY(-4px); box-shadow:0 20px 40px -18px rgba(21,15,46,0.18);}
+  .b-wide{grid-column:span 2;}
+  .b-tall{grid-row:span 2;}
+  @media (max-width:560px){ .b-wide, .b-tall{grid-column:span 1; grid-row:span 1;} }
+  .b-card.dark{background:var(--ink); color:#fff;}
+  .b-card.dark h3{color:#fff;}
+  .b-card.dark p{color:#b8b2d1;}
+  .b-icon{width:38px; height:38px; border-radius:10px; background:var(--violet-tint); display:flex; align-items:center; justify-content:center; margin-bottom:16px;}
+  .b-card.dark .b-icon{background:rgba(255,255,255,0.1);}
+  .b-card h3{font-size:1.1rem; margin-bottom:8px;}
+  .b-card p{font-size:0.92rem; color:var(--text-dim);}
+
+  /* HOW */
+  .how{padding:100px 0; background:var(--bg-soft); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .how-steps{display:grid; grid-template-columns:repeat(3,1fr); gap:32px; margin-top:10px;}
+  @media (max-width:820px){ .how-steps{grid-template-columns:1fr;} }
+  .how-step{background:#fff; border:1px solid var(--line); border-radius:16px; padding:32px;}
+  .how-num{font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; font-size:1.6rem; color:var(--violet); margin-bottom:16px;}
+  .how-step h3{font-size:1.1rem; margin-bottom:10px;}
+  .how-step p{font-size:0.92rem; color:var(--text-dim);}
+
+  /* PRICING */
+  .pricing{padding:110px 0;}
+  .toggle-wrap{display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:56px;}
+  .toggle{position:relative; width:52px; height:28px; background:var(--line); border-radius:99px; cursor:pointer; border:none;}
+  .toggle::after{content:""; position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:#fff; transition:transform .25s ease; box-shadow:0 2px 6px rgba(0,0,0,0.15);}
+  .toggle.active{background:var(--violet);}
+  .toggle.active::after{transform:translateX(24px);}
+  .toggle-label{font-size:0.92rem; font-weight:600; color:var(--text-dim);}
+  .toggle-label.active{color:var(--ink);}
+  .save-badge{background:var(--lime); color:var(--ink); font-size:0.72rem; font-weight:700; padding:3px 9px; border-radius:99px;}
+
+  .price-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:24px; align-items:stretch;}
+  @media (max-width:880px){ .price-grid{grid-template-columns:1fr; max-width:400px; margin:0 auto;} }
+  .price-card{border:1px solid var(--line); border-radius:18px; padding:36px 30px; display:flex; flex-direction:column;}
+  .price-card.popular{border:2px solid var(--violet); position:relative; box-shadow:0 24px 50px -20px rgba(124,58,237,0.35);}
+  .popular-tag{position:absolute; top:-14px; left:50%; transform:translateX(-50%); background:var(--violet); color:#fff; font-size:0.75rem; font-weight:700; padding:5px 16px; border-radius:99px;}
+  .price-name{font-size:1.1rem; font-weight:700; margin-bottom:6px;}
+  .price-desc{font-size:0.88rem; color:var(--text-dim); margin-bottom:24px;}
+  .price-amount{font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; font-size:2.4rem; margin-bottom:4px;}
+  .price-amount span{font-size:1rem; font-weight:500; color:var(--text-dim);}
+  .price-period{font-size:0.82rem; color:var(--text-dim); margin-bottom:26px;}
+  .price-feats{list-style:none; margin-bottom:30px; flex-grow:1;}
+  .price-feats li{display:flex; align-items:flex-start; gap:10px; font-size:0.9rem; margin-bottom:12px; color:var(--text-dim);}
+  .price-feats li::before{content:"✓"; color:var(--violet); font-weight:700;}
+
+  /* TESTIMONIOS */
+  .testimonios{padding:110px 0; background:var(--bg-soft); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .test-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:24px;}
+  @media (max-width:880px){ .test-grid{grid-template-columns:1fr;} }
+  .test-card{background:#fff; border:1px solid var(--line); border-radius:16px; padding:28px;}
+  .test-quote{font-size:0.95rem; margin-bottom:20px;}
+  .test-by{display:flex; align-items:center; gap:12px;}
+  .test-avatar{width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg, var(--violet), var(--coral));}
+  .test-name{font-size:0.88rem; font-weight:700;}
+  .test-role{font-size:0.8rem; color:var(--text-dim);}
+
+  /* FAQ */
+  .faq{padding:110px 0; max-width:760px; margin:0 auto;}
+  .faq-item{border-bottom:1px solid var(--line);}
+  .faq-q{width:100%; display:flex; justify-content:space-between; align-items:center; padding:24px 0; background:none; border:none; text-align:left; font-family:'Plus Jakarta Sans',sans-serif; font-weight:600; font-size:1.02rem; cursor:pointer; color:var(--ink);}
+  .faq-icon{width:20px; height:20px; position:relative; flex-shrink:0;}
+  .faq-icon::before, .faq-icon::after{content:""; position:absolute; background:var(--ink); transition:transform .3s ease;}
+  .faq-icon::before{width:100%; height:2px; top:50%; transform:translateY(-50%);}
+  .faq-icon::after{height:100%; width:2px; left:50%; transform:translateX(-50%);}
+  .faq-item.open .faq-icon::after{transform:translateX(-50%) rotate(90deg); opacity:0;}
+  .faq-a{max-height:0; overflow:hidden; transition:max-height .3s ease;}
+  .faq-a p{padding-bottom:24px; color:var(--text-dim); font-size:0.94rem; max-width:640px;}
+
+  /* CTA */
+  .cta-final{padding:110px 0; text-align:center;}
+  .cta-box{background:linear-gradient(120deg, var(--violet), var(--violet-deep)); border-radius:28px; padding:80px 40px; position:relative; overflow:hidden;}
+  .cta-box::before{content:""; position:absolute; top:-100px; right:-80px; width:300px; height:300px; border-radius:50%; background:rgba(255,107,87,0.35); filter:blur(30px);}
+  .cta-box h2{color:#fff; font-size:clamp(1.9rem,4vw,2.6rem); margin-bottom:20px; position:relative;}
+  .cta-box p{color:#ded6f7; max-width:480px; margin:0 auto 34px; position:relative;}
+  .cta-box .btn-primary{background:#fff; color:var(--violet-deep); position:relative;}
+  .cta-box .btn-primary:hover{background:var(--lime); color:var(--ink);}
+
+  /* FOOTER */
+  footer{padding:70px 0 40px; border-top:1px solid var(--line);}
+  .foot-grid{display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:40px; margin-bottom:56px;}
+  @media (max-width:800px){ .foot-grid{grid-template-columns:1fr 1fr; gap:32px;} }
+  .foot-logo{display:flex; align-items:center; gap:9px; font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; font-size:1.2rem; margin-bottom:14px;}
+  footer h4{font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-dim); margin-bottom:16px;}
+  footer p, footer a{font-size:0.92rem; color:var(--text-dim); margin-bottom:10px; display:block;}
+  footer a:hover{color:var(--violet);}
+  .foot-bottom{display:flex; justify-content:space-between; padding-top:26px; border-top:1px solid var(--line); font-size:0.8rem; color:var(--text-dim); flex-wrap:wrap; gap:10px;}
+  .foot-bottom .tag{color:var(--violet);}
+
+  :focus-visible{outline:2px solid var(--violet); outline-offset:3px;}
+</style>
+</head>
+<body>
+
+<header id="siteHeader">
+  <div class="wrap">
+    <nav>
+      <a href="#top" class="logo"><span class="logo-mark"></span>Flujo</a>
+      <div class="nav-links">
+        <a href="#features">Producto</a>
+        <a href="#pricing">Precios</a>
+        <a href="#testimonios">Clientes</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="nav-cta">
+        <a href="#" class="nav-login">Iniciar sesión</a>
+        <a href="#pricing" class="btn btn-primary">Prueba gratis</a>
+      </div>
+      <button class="burger" id="burgerBtn" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+    </nav>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#features">Producto</a>
+    <a href="#pricing">Precios</a>
+    <a href="#testimonios">Clientes</a>
+    <a href="#faq">FAQ</a>
+    <a href="#pricing">Prueba gratis</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="hero-blob"></div>
+    <div class="wrap">
+      <div class="hero-inner">
+        <span class="badge"><span class="dot"></span> Nuevo: conciliación bancaria automática</span>
+        <h1>Factura, cobra y <span class="accent">mira tu flujo de caja</span> en un solo lugar.</h1>
+        <p class="hero-sub">Flujo conecta tu banco, tus facturas y tus clientes para que sepas exactamente cuánto dinero entra, cuánto sale y qué viene después.</p>
+        <div class="hero-actions">
+          <a href="#pricing" class="btn btn-primary btn-lg">Empieza gratis</a>
+          <a href="#features" class="btn btn-outline btn-lg">Ver cómo funciona</a>
+        </div>
+        <p class="hero-note">Sin tarjeta de crédito · Configuración en 5 minutos</p>
+      </div>
+
+      <div class="mock-wrap reveal">
+        <div class="mock-card">
+          <div class="mock-header">
+            <div class="mock-dots"><span></span><span></span><span></span></div>
+            <div class="mock-title">Flujo de caja — últimos 6 meses</div>
+          </div>
+          <div>
+            <div class="mock-chart">
+              <div style="height:40%"></div><div style="height:65%"></div><div style="height:50%"></div>
+              <div style="height:82%"></div><div style="height:60%"></div><div style="height:95%"></div>
+            </div>
+            <div class="mock-stat">$48.2M</div>
+            <div class="mock-stat-label">Ingresos proyectados este mes</div>
+          </div>
+          <div class="mock-list">
+            <div class="mock-row"><span>Distribuidora Nortia</span><span class="status paid">Pagado</span></div>
+            <div class="mock-row"><span>Estudio Palma</span><span class="status pending">Pendiente</span></div>
+            <div class="mock-row"><span>Grupo Caribe SAS</span><span class="status paid">Pagado</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="trust">
+    <div class="wrap">
+      <p class="trust-label">Usado por equipos financieros en empresas como</p>
+      <div class="trust-logos">
+        <span>Nortia</span><span>Estudio Palma</span><span>Vantia</span><span>Grupo Caribe</span><span>Muvo</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="wrap">
+      <div class="section-head center reveal">
+        <span class="eyebrow">Producto</span>
+        <h2>Todo lo que necesitas para no perder de vista tu plata</h2>
+        <p>Deja de saltar entre cinco apps distintas. Flujo une facturación, cobranza y flujo de caja en un solo panel.</p>
+      </div>
+      <div class="bento reveal">
+        <div class="b-card dark b-wide">
+          <div class="b-icon">📊</div>
+          <h3>Flujo de caja en tiempo real</h3>
+          <p>Proyección automática de entradas y salidas, actualizada cada vez que se mueve tu cuenta bancaria.</p>
+        </div>
+        <div class="b-card b-tall">
+          <div class="b-icon">🧾</div>
+          <h3>Facturación electrónica</h3>
+          <p>Genera facturas con validez legal en segundos y envíalas directo por WhatsApp o correo.</p>
+        </div>
+        <div class="b-card">
+          <div class="b-icon">🔔</div>
+          <h3>Recordatorios automáticos</h3>
+          <p>Flujo le escribe a tus clientes antes de que venza la factura, sin que muevas un dedo.</p>
+        </div>
+        <div class="b-card">
+          <div class="b-icon">🏦</div>
+          <h3>Conexión bancaria</h3>
+          <p>Sincroniza tus cuentas y concilia pagos automáticamente contra cada factura emitida.</p>
+        </div>
+        <div class="b-card b-wide">
+          <div class="b-icon">🌎</div>
+          <h3>Multi-moneda y multi-empresa</h3>
+          <p>Gestiona varias empresas o monedas desde una sola cuenta, ideal para equipos que facturan en COP y USD.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="how">
+    <div class="wrap">
+      <div class="section-head center reveal">
+        <span class="eyebrow">Cómo funciona</span>
+        <h2>Tres pasos y listo</h2>
+      </div>
+      <div class="how-steps reveal">
+        <div class="how-step">
+          <div class="how-num">01</div>
+          <h3>Conecta tu banco</h3>
+          <p>Vincula tus cuentas en menos de 2 minutos, de forma segura y de solo lectura.</p>
+        </div>
+        <div class="how-step">
+          <div class="how-num">02</div>
+          <h3>Emite tus facturas</h3>
+          <p>Crea y envía facturas electrónicas con plantillas listas, sin depender de tu contador.</p>
+        </div>
+        <div class="how-step">
+          <div class="how-num">03</div>
+          <h3>Mira tu flujo</h3>
+          <p>Revisa cuánto vas a tener disponible en 30, 60 y 90 días, con datos reales, no estimaciones a ojo.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing" id="pricing">
+    <div class="wrap">
+      <div class="section-head center reveal">
+        <span class="eyebrow">Precios</span>
+        <h2>Un plan para cada etapa de tu negocio</h2>
+      </div>
+      <div class="toggle-wrap reveal">
+        <span class="toggle-label active" id="labelMonthly">Mensual</span>
+        <button class="toggle" id="billingToggle" aria-label="Cambiar a facturación anual"></button>
+        <span class="toggle-label" id="labelAnnual">Anual</span>
+        <span class="save-badge">Ahorra 20%</span>
+      </div>
+      <div class="price-grid reveal">
+        <div class="price-card">
+          <div class="price-name">Starter</div>
+          <div class="price-desc">Para freelancers e independientes.</div>
+          <div class="price-amount"><span>$</span><span class="amount" data-monthly="49.000" data-annual="39.000">49.000</span><span>/mes</span></div>
+          <div class="price-period">Facturado <span class="period-label">mensualmente</span></div>
+          <ul class="price-feats">
+            <li>Hasta 20 facturas al mes</li>
+            <li>1 cuenta bancaria conectada</li>
+            <li>Recordatorios automáticos</li>
+            <li>Soporte por correo</li>
+          </ul>
+          <a href="#" class="btn btn-outline">Empezar</a>
+        </div>
+        <div class="price-card popular">
+          <span class="popular-tag">Más popular</span>
+          <div class="price-name">Pro</div>
+          <div class="price-desc">Para pymes en crecimiento.</div>
+          <div class="price-amount"><span>$</span><span class="amount" data-monthly="129.000" data-annual="99.000">129.000</span><span>/mes</span></div>
+          <div class="price-period">Facturado <span class="period-label">mensualmente</span></div>
+          <ul class="price-feats">
+            <li>Facturas ilimitadas</li>
+            <li>5 cuentas bancarias conectadas</li>
+            <li>Flujo de caja proyectado</li>
+            <li>Multi-moneda</li>
+            <li>Soporte prioritario</li>
+          </ul>
+          <a href="#" class="btn btn-primary">Empezar</a>
+        </div>
+        <div class="price-card">
+          <div class="price-name">Business</div>
+          <div class="price-desc">Para equipos y multi-empresa.</div>
+          <div class="price-amount"><span>$</span><span class="amount" data-monthly="279.000" data-annual="219.000">279.000</span><span>/mes</span></div>
+          <div class="price-period">Facturado <span class="period-label">mensualmente</span></div>
+          <ul class="price-feats">
+            <li>Todo lo de Pro</li>
+            <li>Cuentas bancarias ilimitadas</li>
+            <li>Multi-empresa</li>
+            <li>Roles y permisos de equipo</li>
+            <li>Gerente de cuenta dedicado</li>
+          </ul>
+          <a href="#" class="btn btn-outline">Empezar</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonios" id="testimonios">
+    <div class="wrap">
+      <div class="section-head center reveal">
+        <span class="eyebrow">Clientes</span>
+        <h2>Lo que dicen los equipos que ya usan Flujo</h2>
+      </div>
+      <div class="test-grid reveal">
+        <div class="test-card">
+          <p class="test-quote">"Dejamos de descubrir a fin de mes que no teníamos caja. Ahora lo vemos venir con semanas de anticipación."</p>
+          <div class="test-by"><div class="test-avatar"></div><div><div class="test-name">Camila Rueda</div><div class="test-role">Fundadora, Estudio Palma</div></div></div>
+        </div>
+        <div class="test-card">
+          <p class="test-quote">"La conciliación automática nos ahorra como 6 horas a la semana que antes gastaba nuestra contadora a mano."</p>
+          <div class="test-by"><div class="test-avatar"></div><div><div class="test-name">Andrés Molina</div><div class="test-role">CFO, Grupo Caribe SAS</div></div></div>
+        </div>
+        <div class="test-card">
+          <p class="test-quote">"Migramos de tres herramientas distintas a solo Flujo. El equipo lo adoptó en menos de una semana."</p>
+          <div class="test-by"><div class="test-avatar"></div><div><div class="test-name">Laura Vidal</div><div class="test-role">COO, Vantia</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq" id="faq">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Preguntas frecuentes</span>
+      <h2>¿Tienes dudas?</h2>
+    </div>
+    <div class="reveal">
+      <div class="faq-item">
+        <button class="faq-q">¿Flujo emite facturas con validez legal?<span class="faq-icon"></span></button>
+        <div class="faq-a"><p>Sí. Las facturas generadas en Flujo cumplen con los requisitos de facturación electrónica vigentes y quedan almacenadas automáticamente para tus reportes contables.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">¿Necesito cambiar de banco para usar Flujo?<span class="faq-icon"></span></button>
+        <div class="faq-a"><p>No. Flujo se conecta de forma segura y de solo lectura a tus cuentas actuales, sin necesidad de abrir una cuenta nueva ni mover tu dinero.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">¿Puedo cambiar de plan más adelante?<span class="faq-icon"></span></button>
+        <div class="faq-a"><p>Sí, puedes subir o bajar de plan cuando quieras desde tu panel de cuenta, y el cobro se ajusta de forma proporcional al tiempo restante del ciclo.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">¿Ofrecen soporte en español?<span class="faq-icon"></span></button>
+        <div class="faq-a"><p>Todo nuestro soporte, desde el plan Starter, se ofrece en español y con horario de atención para la región.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-final">
+    <div class="wrap">
+      <div class="cta-box reveal">
+        <h2>Deja de adivinar cuánta plata tienes disponible.</h2>
+        <p>Empieza gratis hoy y conecta tu primera cuenta bancaria en menos de 5 minutos.</p>
+        <a href="#pricing" class="btn btn-primary btn-lg">Empieza gratis</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="foot-logo"><span class="logo-mark"></span>Flujo</div>
+        <p style="max-width:260px;">Facturación electrónica y flujo de caja en tiempo real para freelancers y pymes.</p>
+      </div>
+      <div>
+        <h4>Producto</h4>
+        <a href="#features">Funciones</a>
+        <a href="#pricing">Precios</a>
+        <a href="#faq">Preguntas frecuentes</a>
+      </div>
+      <div>
+        <h4>Empresa</h4>
+        <a href="#testimonios">Clientes</a>
+        <a href="#">Sobre nosotros</a>
+        <a href="#">Contacto</a>
+      </div>
+      <div>
+        <h4>Contacto</h4>
+        <a href="mailto:hola@flujo-app.com">hola@flujo-app.com</a>
+        <p>Bogotá, Colombia</p>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Flujo.</span>
+      <span class="tag">Proyecto ficticio de portafolio — diseño y desarrollo demostrativo.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const header = document.getElementById('siteHeader');
+  window.addEventListener('scroll', () => header.classList.toggle('scrolled', window.scrollY > 30), {passive:true});
+
+  const burger = document.getElementById('burgerBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  burger.addEventListener('click', () => {
+    const open = mobileMenu.classList.toggle('open');
+    burger.setAttribute('aria-expanded', open);
+  });
+  mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    mobileMenu.classList.remove('open'); burger.setAttribute('aria-expanded','false');
+  }));
+
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+  }, {threshold:0.12});
+  revealEls.forEach(el => io.observe(el));
+
+  // pricing toggle
+  const toggle = document.getElementById('billingToggle');
+  const labelMonthly = document.getElementById('labelMonthly');
+  const labelAnnual = document.getElementById('labelAnnual');
+  const amounts = document.querySelectorAll('.amount');
+  const periodLabels = document.querySelectorAll('.period-label');
+  let annual = false;
+  toggle.addEventListener('click', () => {
+    annual = !annual;
+    toggle.classList.toggle('active', annual);
+    labelMonthly.classList.toggle('active', !annual);
+    labelAnnual.classList.toggle('active', annual);
+    amounts.forEach(el => { el.textContent = annual ? el.dataset.annual : el.dataset.monthly; });
+    periodLabels.forEach(el => { el.textContent = annual ? 'anualmente' : 'mensualmente'; });
+  });
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-item').forEach(item => {
+    const q = item.querySelector('.faq-q');
+    const a = item.querySelector('.faq-a');
+    q.addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(other => {
+        if (other !== item){ other.classList.remove('open'); other.querySelector('.faq-a').style.maxHeight = null; }
+      });
+      item.classList.toggle('open', !isOpen);
+      a.style.maxHeight = !isOpen ? a.scrollHeight + 'px' : null;
+    });
+  });
+</script>
+
+</body>
+</html>
